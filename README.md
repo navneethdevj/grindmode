@@ -1,17 +1,84 @@
-# grindmode
+# GrindMode
 
-A new Flutter project.
+GrindMode is a **gamified productivity and focus tracking app** built with Flutter.
+It helps students stay focused while studying by turning productivity into a competitive and rewarding experience.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+* ⏱ Focus timer for deep study sessions
+* 📈 Study reports and productivity tracking
+* 🏆 XP system and leaderboards
+* 👥 Groups for competing with friends
+* 🔥 Daily streak tracking
+* 🏅 Unlockable badges
+* 🎨 Multiple themes and backgrounds
+* 🔐 Firebase authentication (Google login)
+* 🤖 AI features and sarcastic motivational roasts
 
-A few resources to get you started if this is your first Flutter project:
+## Screenshots
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Focus Screen
+![Focus Screen](screenshots/focus.jpeg)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Reports
+![Reports](screenshots/report.jpeg)
+
+### Roast Feature
+![Roast](screenshots/roast.jpeg)
+
+### Groups
+![Groups](screenshots/groups.jpeg)
+
+### Leaderboard
+![Leaderboard](screenshots/leaderboard.jpeg)
+
+### Profile
+![Profile](screenshots/profile.jpeg)
+
+## Built With
+
+* **Flutter**
+* **Firebase Authentication**
+* **Cloud Firestore**
+* **Firebase Storage**
+
+## Screens
+
+The app includes multiple screens such as:
+
+* Focus timer
+* Groups
+* Leaderboards
+* Reports
+* Profile
+* Tasks
+
+## Installation
+
+1. Clone the repository
+
+```
+git clone https://github.com/SayuSky/grindmode.git
+```
+
+2. Navigate to the project folder
+
+```
+cd grindmode
+```
+
+3. Install dependencies
+
+```
+flutter pub get
+```
+
+4. Run the app
+
+```
+flutter run
+```
+
+## Author
+
+Created by **SayuSky**.
