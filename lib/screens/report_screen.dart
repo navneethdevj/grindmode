@@ -248,7 +248,7 @@ Output ONLY the lines. No headers, no preamble, no extra text.
         'Authorization': 'Bearer $apiKey',
       },
       body: jsonEncode({
-        'model': 'arcee-ai/trinity-large-preview:free',
+        'model': 'anthropic/claude-opus-4',
         'messages': [
           {'role': 'user', 'content': prompt}
         ],
