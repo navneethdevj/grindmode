@@ -46,18 +46,26 @@ class _GroupsScreenState extends State<GroupsScreen> {
         .get();
 
     final groups = <_Group>[];
-    for (final doc in snap.docs) {
+
+    // Fetch all group member lists in parallel instead of sequentially
+    final memberSnapFutures = snap.docs.map((doc) =>
+      FirebaseFirestore.instance
+          .collection('groups').doc(doc.id)
+          .collection('members')
+          .orderBy('totalMinutes', descending: true)
+          .limit(10)
+          .get()
+    ).toList();
+    final memberSnaps = await Future.wait(memberSnapFutures);
+
+    for (int gi = 0; gi < snap.docs.length; gi++) {
+      final doc       = snap.docs[gi];
       final d         = doc.data();
       final memberIds = List<String>.from(d['memberIds'] ?? []);
       final joined    = memberIds.contains(_myUid);
 
       final members    = <_Member>[];
-      final memberSnap = await FirebaseFirestore.instance
-          .collection('groups').doc(doc.id)
-          .collection('members')
-          .orderBy('totalMinutes', descending: true)
-          .limit(10)
-          .get();
+      final memberSnap = memberSnaps[gi];
 
       for (int i = 0; i < memberSnap.docs.length; i++) {
         final m = memberSnap.docs[i].data();
