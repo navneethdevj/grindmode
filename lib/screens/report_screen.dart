@@ -232,7 +232,7 @@ Output ONLY the lines. No headers, no preamble, no extra text.
       });
     } catch (e) {
       if (mounted) setState(() {
-        _roastText = 'The roast machine is taking a break. Try again later.';
+        _roastText = 'The roast machine is taking a break. Check your connection and try again later.';
         _motivText = '';
         _roastLoading = false;
       });
