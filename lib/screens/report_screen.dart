@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dart:math';
+import 'dart:math' show max;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/badge_service.dart';
 import '../widgets/theme_decoration_layer.dart';
@@ -35,12 +36,8 @@ class _ReportScreenState extends State<ReportScreen> {
 
   List<GrindBadge> _badges = [];
 
-  // FIX: separate roast + motivation strings
   String _roastText = '';
   String _motivText = '';
-
-  // Random seed so every refresh gives different output
-  final _rng = Random();
 
   @override
   void initState() {
@@ -158,9 +155,28 @@ class _ReportScreenState extends State<ReportScreen> {
   //  AI ROAST + MOTIVATION
   // ─────────────────────────────────────────────
 
-  // FIX: single method loads both roast + motivation, always fresh
+  // Cache key: roast is cached per-user per-day to avoid redundant API calls.
   Future<void> _loadRoastAndMotivation() async {
-    setState(() { _roastLoading = true; _roastText = ''; _motivText = ''; });
+    setState(() { _roastLoading = true; });
+
+    // Check daily cache first
+    final uid   = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey     = 'roast_cache_${uid}_$today';
+    final cachedRoast  = prefs.getString('${cacheKey}_roast');
+    final cachedMotiv  = prefs.getString('${cacheKey}_motiv');
+
+    if (cachedRoast != null && cachedRoast.isNotEmpty) {
+      if (mounted) setState(() {
+        _roastText    = cachedRoast;
+        _motivText    = cachedMotiv ?? '';
+        _roastLoading = false;
+      });
+      return;
+    }
+
+    setState(() { _roastText = ''; _motivText = ''; });
 
     final unlockedCount = _badges.where((b) => b.unlocked).length;
     final topSubject    = _subjMap.isEmpty ? 'nothing'
@@ -168,11 +184,8 @@ class _ReportScreenState extends State<ReportScreen> {
             .reduce((a, b) => a.value.mins > b.value.mins ? a : b).key;
     final totalHours = (_totalMins / 60).toStringAsFixed(1);
 
-    // FIX: random variation number forces Claude to generate fresh content
-    final variation = _rng.nextInt(9999);
-
     final prompt = '''
-You are a brutally sarcastic but secretly motivating AI study coach for students using an app called GrindMode. Variation seed: $variation.
+You are a brutally sarcastic but secretly motivating AI study coach for students using an app called GrindMode.
 
 User stats:
 - Total study time: $totalHours hours
@@ -208,15 +221,18 @@ Output ONLY the lines. No headers, no preamble, no extra text.
       final roast    = parts.isNotEmpty ? parts[0].trim() : '';
       final motiv    = parts.length > 1 ? parts[1].trim() : '';
 
+      // Save to daily cache
+      await prefs.setString('${cacheKey}_roast', roast);
+      await prefs.setString('${cacheKey}_motiv', motiv);
+
       if (mounted) setState(() {
         _roastText    = roast;
         _motivText    = motiv;
         _roastLoading = false;
       });
     } catch (e) {
-      print('🔥 ROAST ERROR: $e');
       if (mounted) setState(() {
-        _roastText = 'ERROR: $e';
+        _roastText = 'The roast machine is taking a break. Try again later.';
         _motivText = '';
         _roastLoading = false;
       });

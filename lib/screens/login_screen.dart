@@ -29,14 +29,35 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(email);
+  }
+
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text.trim();
+
+    if (email.isEmpty) {
+      setState(() { _error = 'Email is required'; });
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      setState(() { _error = "That's not even a real email bro"; });
+      return;
+    }
+    if (password.isEmpty) {
+      setState(() { _error = 'Password is required'; });
+      return;
+    }
+
     setState(() { _loading = true; _error = null; });
     try {
       if (_isLogin) {
         await _auth.signInWithEmail(
-          email: _emailCtrl.text.trim(),
-          password: _passCtrl.text.trim(),
+          email: email,
+          password: password,
         );
         if (mounted) Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => const HomeScreen()));
@@ -46,8 +67,8 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
         await _auth.signUpWithEmail(
-          email: _emailCtrl.text.trim(),
-          password: _passCtrl.text.trim(),
+          email: email,
+          password: password,
           username: _userCtrl.text.trim(),
         );
         if (mounted) Navigator.pushReplacement(
@@ -67,8 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
   setState(() { _googleLoading = true; _error = null; });
   try {
     final cred = await _auth.signInWithGoogle();
-    if (cred != null && mounted) {
-      // FIX: check onboardingDone before deciding where to navigate
+    if (cred != null && cred.user != null && mounted) {
+      // check onboardingDone before deciding where to navigate
       final doc = await FirebaseFirestore.instance
           .collection('users').doc(cred.user!.uid).get();
       final onboardingDone = doc.data()?['onboardingDone'] ?? false;

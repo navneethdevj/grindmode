@@ -1,30 +1,47 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:grindmode/main.dart';
+import 'package:grindmode/theme/app_theme.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('GrindModeApp theme smoke test', (WidgetTester tester) async {
+    // Verify the theme system builds correctly without Firebase.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GrindThemeRoot(
+          initialTheme: GrindTheme.defaultBlue,
+          child: Builder(
+            builder: (context) {
+              final c = AppColors.of(context);
+              return Scaffold(
+                backgroundColor: c.bg,
+                body: const Center(child: Text('GrindMode')),
+              );
+            },
+          ),
+        ),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('GrindMode'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('AppColors theme variants apply correctly', (WidgetTester tester) async {
+    for (final theme in GrindTheme.values) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GrindThemeRoot(
+            initialTheme: theme,
+            child: Builder(
+              builder: (context) {
+                final c = AppColors.of(context);
+                return ColoredBox(color: c.bg);
+              },
+            ),
+          ),
+        ),
+      );
+      // Verify each theme variant renders without error.
+      expect(find.byType(ColoredBox), findsOneWidget);
+    }
   });
 }
